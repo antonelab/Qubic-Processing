@@ -1,5 +1,6 @@
+package qubic;
+
 import java.util.ArrayList; 
-import Move;
 
 public class Cube3 implements Cube{
         //prvi indeks oznacava nivo, drugi redak i treci stupac

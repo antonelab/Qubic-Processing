@@ -1,3 +1,4 @@
+package qubic;
 
 public class Move {
     private int mLevel;

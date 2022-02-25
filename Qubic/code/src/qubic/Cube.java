@@ -1,5 +1,6 @@
+package qubic;
+
 import java.util.ArrayList;
-import Move.java;
 
 public interface Cube {
     //cisti kocku
