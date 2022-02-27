@@ -92,7 +92,7 @@ void draw(){
       for(int i = 0 ; i < 3; i++)
         for(int j = 0; j < 3; j++)
           for(int k = 0; k < 3; k++){
-            text("X", 75 + 75 * k + 75 * (2 - i) + 30, height - (50 + 75 * j + 270 * (2 - i) + 25));
+            text("X", 75 + 75 * k + 75 * (2 - i) + 30, height - (50 + 75 * (2 - j) + 270 * (2 - i) + 25));
           }
       
     }
@@ -132,9 +132,18 @@ void draw(){
       line(250, height - 750, 450, height - 750);
       line(250, height - 800, 450, height - 800);
       line(250, height - 850, 450, height - 850);
+      
+      //prikaz elemenata kocke
+      textSize(40);
+      textAlign(CENTER);
+      for(int i = 0 ; i < 4; i++)
+        for(int j = 0; j < 4; j++)
+          for(int k = 0; k < 1; k++){
+            text("X", 100 + 50 * k + 50 * (3 - i) + 25, height - (20 + 50 * (3 - j) + 225 * (3 - i) + 15));
+          }
     }
     
-    textAlign(LEFT);
+    textAlign(CENTER);
     textSize(40);
     fill(255);
     if(player == 'x') fill(name_color);
