@@ -1,25 +1,30 @@
 import qubic.*;
 
-Move m;
 
 String player1_name = "";
 String player2_name = "";
 int move_count = 0;
 char player = 'x'; //oznaka igraca na potezu
 char winner = ' ';  //oznacava pobjednika
-int type = 3;
+int type = 3; //defaultni tip igre
+String hint = "nema poteza trenutno"; //spremanje poteza koji racunalo nalazi kao najbolje
 
 Player player1;
 Player player2;
 Player currentPlayer;
-//Cube cube = new Cube3();
 
 PFont font;
+
+
 
 int mess = 0; //dodatna varijabla koja govori da li imamo poruku o greski
 int name = 1; // ako je 1, postavlja se prvi, ako je 2 postavlja se drugi, ako je 0 onda su svi postavljeni 
 int info = 0; //ako je 1 onda se mora prikazat zaslon s pravilima
 int help = 0; //ako je 1 onda se mora prikazat zaslon s pomocnim informacijama
+int stat = 0; //ako je 1 onda je prikaz statistike
+
+String[] winners3 = {};
+String[] winners4 = {};
 
 color label_color = color(134, 194, 116);
 color name_color = color(199, 78, 92);
@@ -62,7 +67,6 @@ void draw(){
     textAlign(CENTER);
     //iscrtaj polje za igru
     
-    //if(type == 4) surface.setSize(1000, 800);
     if(type == 3){
       strokeWeight(6);
       stroke(255);
@@ -154,6 +158,26 @@ void draw(){
     text("O: " + player2_name, 800, height/3+100);
     fill(255);
     text("Broj poteza: " + move_count, 800, height-100);
+    
+    stroke(0);
+    strokeWeight(5);
+    if(hover(725, 600, 150, 50)) 
+    {
+      fill(168, 168, 168);
+      textSize(20);
+      textAlign(CENTER);
+      text(hint, 800, 700);
+    }
+    else fill(255);
+    rect(725, 600, 150, 50, 20);
+    
+    fill(0);
+    textSize(30);
+    textAlign(LEFT);
+    text("Pomoć", 755, 640);
+    fill(255);
+    
+    
     
       if(winner != ' '){
       textSize(50);
@@ -268,7 +292,51 @@ void draw(){
      text("Imena ne mogu sadržavati $, %, &, ?", 50, 850);
      fill(255);
   }
-  if(help == 1){
+  if(stat > 0){
+    background(100);
+    fill(255);
+    textSize(50);
+    textAlign(CENTER);
+    if(stat == 3 && name == 0){
+      text(winners3[0], width/2, 100);
+      textSize(30);
+      fill(name_color);
+      text(winners3[1], width/2, 180);
+      fill(label_color);
+      text(winners3[2], width/2, 230);
+      
+      textSize(50);
+      fill(255);
+      text(winners4[0], width/2, 400);
+      textSize(30);
+      fill(name_color);
+      text(winners4[1], width/2, 480);
+      fill(label_color);
+      text(winners4[2], width/2, 530);
+    }
+    else if(stat == 3 && name != 0){
+      textSize(30);
+      text("Upišite ime igrača pa pokušajte ponovo vidjeti statistiku! ", width/2, 100);
+    }
+    else{
+      if(stat == 1) text("Najbolji X igrači:", width/2, 75);
+      if(stat == 2) text("Najbolji O igrači:", width/2, 75);
+      textSize(30);
+      text("3x3x3 igra:", width/2, 150);
+      
+      fill(label_color);
+      for(int i = 0; i < winners3.length && i < 5; i++){
+        text(str(i+1)+ ".  " + winners3[i], width/2, 200 + i*50);
+      }
+      fill(255);
+      text("4x4x4 igra:", width/2, 550);
+      fill(label_color);
+      for(int i = 0; i < winners4.length && i < 5; i++){
+        text(str(i+1)+ ".  " + winners4[i], width/2, 600 + i*50);
+      }
+    }
+  }
+  else if(help == 1){
     background(bg_color);
     fill(255);
     textSize(50);
@@ -514,6 +582,7 @@ void keyPressed(){
     else if(key == '?'){
       help = 1 - help;
     }
+    else if(key == TAB ) stat = 0;
      else if(key == '$'){
       label_color =  color(134, 194, 116);
       name_color =  color(199, 78, 92);
@@ -536,6 +605,111 @@ void keyPressed(){
       if(name == 1) player1_name = removeLastChar(player1_name);
       else if ( name == 2) player2_name = removeLastChar(player2_name);
     }
+  }
+   else if(keyCode == UP) { //gledamo samo x koji su pobjedili
+    String[] lines = loadStrings("results.txt");
+    String[] line;
+    IntDict results3 = new IntDict();
+    IntDict results4 = new IntDict();
+    for (int i = 0 ; i < lines.length; i++) {
+      line = split(lines[i],',');
+      if(line[4].equals("3")){
+        if(line[2].equals( "x" ) && results3.hasKey(line[0])) results3.increment(line[0]);
+        else if(line[2].equals( "x" ) && !results3.hasKey(line[0])) results3.set(line[0], 1);
+      }
+      else{
+        if(line[2].equals( "x" ) && results4.hasKey(line[0])) results4.increment(line[0]);
+        else if(line[2].equals( "x" ) && !results4.hasKey(line[0])) results4.set(line[0], 1);
+      }
+    }
+    results3.sortValuesReverse();
+    results4.sortValuesReverse();
+    winners3 = new String[]{};
+    winners4 = new String[]{};
+    for(String s : results3.keys()){
+       winners3 = append(winners3,  s + "  ->  "+ str(results3.get(s)));
+    }   
+    for(String s : results4.keys()){
+       winners4 = append(winners4,  s + "  ->  "+ str(results4.get(s)));
+    }  
+    stat = 1;
+  }
+  else if(keyCode == DOWN) { //gledamo samo o koji su pobjedili
+    String[] lines = loadStrings("results.txt");
+    String[] line;
+    IntDict results3 = new IntDict();
+    IntDict results4 = new IntDict();
+    for (int i = 0 ; i < lines.length; i++) {
+      line = split(lines[i],',');
+      if(line[4].equals("3")){
+        if(line[2].equals( "o" ) && results3.hasKey(line[1])) results3.increment(line[1]);
+        else if(line[2].equals( "o" ) && !results3.hasKey(line[1])) results3.set(line[1], 1);
+      }
+      else{
+        if(line[2].equals( "o" ) && results4.hasKey(line[1])) results4.increment(line[1]);
+        else if(line[2].equals( "o" ) && !results4.hasKey(line[1])) results4.set(line[1], 1);
+      }
+    }
+    results3.sortValuesReverse();
+    results4.sortValuesReverse();
+    winners3 = new String[]{};
+    winners4 = new String[]{};
+    for(String s : results3.keys()){
+       winners3 = append(winners3,  s + "  ->  "+ str(results3.get(s)));
+    }   
+    for(String s : results4.keys()){
+       winners4 = append(winners4,  s + "  ->  "+ str(results4.get(s)));
+    }  
+    
+    stat = 2;
+  }
+  else if(keyCode == LEFT || keyCode == RIGHT) { //gledamo samo o koji su pobjedili
+    String[] lines = loadStrings("results.txt");
+    String[] line;
+    int x_win3 = 0;
+    int o_win3 = 0;
+    int x_win4 = 0;
+    int o_win4 = 0;
+    for (int i = 0 ; i < lines.length; i++) {
+      line = split(lines[i],',');
+      if(keyCode == LEFT){
+         if(line[4].equals("3"))
+        {
+          if(line[2].equals("x") && line[0].equals(player1_name)) x_win3++;
+          if(line[2].equals("o") && line[1].equals(player1_name)) o_win3++;
+        }
+        else{
+          if(line[2].equals("x") && line[0].equals(player1_name)) x_win4++;
+          if(line[2].equals("o") && line[1].equals(player1_name)) o_win4++;
+        }
+      }
+      if(keyCode == RIGHT){
+        if(line[4].equals("3")){
+            if(line[2].equals("x") && line[0].equals(player2_name)) x_win3++;
+            if(line[2].equals("o") && line[1].equals(player2_name)) o_win3++;
+        }
+        else{
+          if(line[2].equals("x") && line[0].equals(player2_name)) x_win4++;
+          if(line[2].equals("o") && line[1].equals(player2_name)) o_win4++;
+        } 
+      }
+    }
+    winners3 = new String[]{};
+    winners4 = new String[]{};
+    if(keyCode == LEFT){
+      winners3 = append(winners3, "Statistika igrača "+ player1_name + " u igri 3x3x3:");
+      winners4 = append(winners4, "Statistika igrača "+ player1_name + " u igri 4x4x4:");
+    }
+    
+    if(keyCode == RIGHT) {
+      winners3 = append(winners3, "Statistika igrača "+ player2_name + " u igri 3x3x3:");
+      winners4 = append(winners4, "Statistika igrača "+ player2_name + " u igri 4x4x4:");
+    }
+    winners3 = append(winners3, "Pobjede kao X igrača:  " + str(x_win3));
+    winners3 = append(winners3, "Pobjede kao O igrača:  " + str(o_win3));
+    winners4= append(winners4, "Pobjede kao X igrača:  " + str(x_win4));
+    winners4 = append(winners4, "Pobjede kao O igrača:  " + str(o_win4));
+    stat = 3;
   }
 }
 
