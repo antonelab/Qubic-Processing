@@ -140,13 +140,14 @@ void draw(){
     textSize(40);
     textFont(font);
     textAlign(CENTER);
-    text("DOBRODOŠLI U IGRU QUBIC!", width/2, height/4);
-    textSize(20);
+    text("DOBRODOŠLI U IGRU QUBIC!", width/2, 100);
+    textSize(30);
     textAlign(CENTER);
-    text("Upišite ime za X igrača i stisnite Enter, zatim ponovite postupak za ime O igrača.", width/2, height/3);
+    text("Upišite ime za X igrača i stisnite Enter, ", width/2, 200);
+    text("zatim ponovite postupak za ime O igrača.", width/2, 200+50);
     strokeWeight(2);
     textAlign(LEFT);
-    textSize(30);
+    textSize(40);
     if(name == 1) fill(name_color);
     text("X: " + player1_name, 100, height/2-25);
     fill(255);
@@ -177,10 +178,11 @@ void draw(){
     textAlign(CENTER);
     text("Pravila", width*3/7+75, height*2/3+35);
     fill(255);
-    textSize(15);
+    textSize(20);
     textAlign(LEFT);
-    text("Napomena: Imena neka imaju maksimalno 10 znakova,  višak znakova se ignorira. ", 50, 4* height/5);
-    text("Napomena: Tipkom ? poziva se help. ", 50, 4* height/5+50);
+    text("Napomena: Imena neka imaju maksimalno 10 znakova, ", 50, 4*height/5);
+    text("        višak znakova se ignorira. ", 100, 4* height/5+50);
+    text("Napomena: Tipkom ? poziva se help. ", 50, 4* height/5+100);
     strokeWeight (8);
   }
   else if (info == 1){
@@ -190,11 +192,11 @@ void draw(){
      textAlign(LEFT);
      text("Qubic je varijanta igre križić-kružić u 3 dimenzije.", 50, 50);
      text("Cilj igre je zauzeti svojim znakom ( X ili O ) ", 50, 90);
-     text("jedan redak, stupac ili dijagonalu.", 60, 130);
+     text("  jedan redak, stupac ili dijagonalu.", 60, 130);
      //text("Pobjednička linija može biti u horizontalnoj ravnini kao kod \n običnog križić-kružića ili u bilo kojoj drugoj ravnini kocke.", 50 , 150);
      text("Igra se može igrati na ploči dimenzija 3x3x3 ili 4x4x4.", 50, 175);
-     text("Igrači naizmjenice igraju potez,", 50, 200);
-     text("tako da kliknu na željeno polje na ploči.", 50, 230);
+     text("Igrači naizmjenice igraju potez,", 50, 220);
+     text("  tako da kliknu na željeno polje na ploči.", 50, 270);
      strokeWeight(2);
      //sjencanje gumba
      if(hover(width*3/7, height/2, 150, 50)) fill(168, 168, 168);
@@ -204,10 +206,13 @@ void draw(){
      textAlign(CENTER);
      text("Povratak", width*3/7+75, height/2+35);
      textSize(30);
-     textAlign(CENTER);
+     textAlign(LEFT);
      fill(label_color);
-     text("Za pokretanje igre, upišite ime prvog igrača, pritisnite Enter \n      i zatim opet upišite ime za drugog igrača i pritisnite Enter.", 500, 600);
-     text("Kada su oba imena upisana, igra počinje. \n      Pripazite da imena imaju do 10 znakova, ostali znakovi se zanemaruju. Sretno!", 500, 700); 
+     text("Za pokretanje igre, upišite ime prvog igrača, pritisnite Enter ", 50, 550);
+     text("  i zatim opet upišite ime za drugog igrača i pritisnite Enter.",50, 600);
+     text("Kada su oba imena upisana, igra počinje. ", 50, 650);
+     text("Pripazite da imena imaju do 10 znakova, ", 50, 700);
+     text("  ostali znakovi se zanemaruju. Sretno!", 50, 750); 
      fill(255);
   }
   if(help == 1){
