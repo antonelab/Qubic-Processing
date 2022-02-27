@@ -23,19 +23,79 @@ PImage bgXgreen;
 PImage bgOred;
 
 void setup(){
-  size(1000,640);
+  size(1000, 850);
+  surface.setResizable(true);
   strokeWeight (8);
-  font = createFont("FFF_Tusj.ttf",50);
+  font = createFont("GloriaHallelujah-Regular.ttf",50);
   bgXgreen = loadImage("x-green.jpg");
   bgOred = loadImage("o-red.jpg");
+  
+  
 }
 
 void draw(){
+  //dio u kojem se crta main screen
   if( name == 0){
-    background(100);
+    background(33, 80, 102);
     textSize(280);
     textAlign(CENTER);
     //iscrtaj polje za igru
+    
+    //if(type == 4) surface.setSize(1000, 800);
+    if(type == 3){
+      strokeWeight(6);
+      stroke(255);
+      //okomite:
+      line(150, height - 50, 150, height - 275);
+      line(225, height - 50, 225, height - 275);
+      
+      line(225, height - 325, 225, height - 550);
+      line(300, height - 325, 300, height - 550);
+      
+      line(300, height - 600, 300, height - 825);
+      line(375, height - 600, 375, height - 825);
+      
+      //vodoravne;
+      line(75, height - 125, 300, height - 125);
+      line(75, height - 200, 300, height - 200);
+      
+      line(150, height - 400, 375, height - 400);
+      line(150, height - 475, 375, height - 475);
+      
+      line(225, height - 675, 450, height - 675);
+      line(225, height - 750, 450, height - 750);
+    }
+    if(type == 4){
+      strokeWeight(6);
+      stroke(255);
+      //okomite:
+      line(150, height - 50, 150, height - 200);
+      line(200, height - 50, 200, height - 200);
+      
+      line(200, height - 250, 200, height - 400);
+      line(250, height - 250, 250, height - 400);
+      
+      line(250, height - 450, 250, height - 600);
+      line(300, height - 450, 300, height - 600);
+      
+      line(300, height - 650, 300, height - 800);
+      line(350, height - 650, 350, height - 800);
+      
+      //vodoravne;
+      line(100, height - 100, 250, height - 100);
+      line(100, height - 150, 250, height - 150);
+      
+      line(150, height - 300, 300, height - 300);
+      line(150, height - 350, 300, height - 350);
+      
+      line(200, height - 500, 350, height - 500);
+      line(200, height - 550, 350, height - 550);
+      
+      line(250, height - 700, 400, height - 700);
+      line(250, height - 750, 400, height - 750);
+    }
+    
+    
     textSize(40);
     fill(255);
     if(player == 'x') fill(name_color);
@@ -57,13 +117,13 @@ void draw(){
       if(winner == 'x'){
         background(bgXgreen);
         fill(0);
-        text("Game Over\nPobijedio je player:\n" + player1_name, width/2, height/3);
+        text("Game Over\nPobijedio je igrač:\n" + player1_name, width/2, height/3);
         text("u "+move_count+" poteza", width/2, height/3+200);
       }
       else{
         background(bgOred);
         fill(0);
-        text("Game Over\nPobijedio je player:\n" + player2_name, width/2, height/3);
+        text("Game Over\nPobijedio je igrač:\n" + player2_name, width/2, height/3);
         text("u " + move_count + " poteza", width/2, height/3+200);
       }
     }
@@ -75,7 +135,7 @@ void draw(){
     fill(255);
   }
   else if(info == 0){
-    background(100);
+    background(33, 80, 102);
     fill(255);
     textSize(40);
     textFont(font);
@@ -83,7 +143,7 @@ void draw(){
     text("DOBRODOŠLI U IGRU QUBIC!", width/2, height/4);
     textSize(20);
     textAlign(CENTER);
-    text("Upišite ime za X igraca i stisnite Enter, zatim ponovite postupak za ime O igraca.", width/2, height/3);
+    text("Upišite ime za X igrača i stisnite Enter, zatim ponovite postupak za ime O igrača.", width/2, height/3);
     strokeWeight(2);
     textAlign(LEFT);
     textSize(30);
@@ -125,12 +185,16 @@ void draw(){
   }
   else if (info == 1){
     background(100);
-     textSize(20);
+     textSize(30);
      fill(255);
      textAlign(LEFT);
-     text("Qubic je varijanta igre krizic-kruzic u 3 dimenzije.", 50, 50);
-     text("Cilj igre je zauzeti svojim znakom ( X ili O ) jedan redak, stupac ili dijagonalu.", 50, 90);
-     text("Pobjednicka linija moze biti u horizontalnoj ravnini kao kod obicnog krizic-kruzica \n    ili u bilo kojoj drugoj ravnini kocke.", 50, 130);
+     text("Qubic je varijanta igre križić-kružić u 3 dimenzije.", 50, 50);
+     text("Cilj igre je zauzeti svojim znakom ( X ili O ) ", 50, 90);
+     text("jedan redak, stupac ili dijagonalu.", 60, 130);
+     //text("Pobjednička linija može biti u horizontalnoj ravnini kao kod \n običnog križić-kružića ili u bilo kojoj drugoj ravnini kocke.", 50 , 150);
+     text("Igra se može igrati na ploči dimenzija 3x3x3 ili 4x4x4.", 50, 175);
+     text("Igrači naizmjenice igraju potez,", 50, 200);
+     text("tako da kliknu na željeno polje na ploči.", 50, 230);
      strokeWeight(2);
      //sjencanje gumba
      if(hover(width*3/7, height/2, 150, 50)) fill(168, 168, 168);
@@ -139,11 +203,11 @@ void draw(){
      textSize(30);
      textAlign(CENTER);
      text("Povratak", width*3/7+75, height/2+35);
-     textSize(20);
+     textSize(30);
      textAlign(CENTER);
      fill(label_color);
-     text("Za pokretanje igre, upišite ime prvog igraca, pritisnite Enter \n      i zatim opet upišite ime za drugog igraca i pritisnite Enter.", 500, 450);
-     text("Kada su oba imena upisana, igra pocinje. \n      Pripazite da imena imaju do 10 znakova, ostali znakovi se zanemaruju. Sretno!", 500, 550); 
+     text("Za pokretanje igre, upišite ime prvog igrača, pritisnite Enter \n      i zatim opet upišite ime za drugog igrača i pritisnite Enter.", 500, 600);
+     text("Kada su oba imena upisana, igra počinje. \n      Pripazite da imena imaju do 10 znakova, ostali znakovi se zanemaruju. Sretno!", 500, 700); 
      fill(255);
   }
   if(help == 1){
@@ -168,6 +232,113 @@ void draw(){
 void mousePressed(){
   if( name == 0){
     //u igri smo
+    //po slucajevima igre:
+    textAlign(CENTER);
+    
+    if(type == 3){
+      textSize(40);
+      //najljeviji stupac
+      //println(mouseX + " " + mouseY);
+      if(mouseX < 150 && mouseX > 75){
+        //usporedbe moraju biti suprotne
+        if(mouseY < (height - 50) && mouseY > (height - 125)) text("X", 75 + 30, height - (50 + 25));
+        if(mouseY < (height - 125) && mouseY > (height - 200)) text("X", 75 + 30, height - (125 + 25));
+        if(mouseY < (height - 200) && mouseY > (height - 275)) text("X", 75 + 30, height - (200 + 25));
+      }
+      if(mouseX < 225 && mouseX > 150){
+        //usporedbe moraju biti suprotne
+        if(mouseY < (height - 50) && mouseY > (height - 125)) text("X", 150 + 30, height - (50 + 25));
+        if(mouseY < (height - 125) && mouseY > (height - 200)) text("X", 150 + 30, height - (125 + 25));
+        if(mouseY < (height - 200) && mouseY > (height - 275)) text("X", 150 + 30, height - (200 + 25));
+        //srednja ploca
+        if(mouseY < (height - 325) && mouseY > (height - 400)) text("X", 150 + 30, height - (325 + 25));
+        if(mouseY < (height - 400) && mouseY > (height - 475)) text("X", 150 + 30, height - (400 + 25));
+        if(mouseY < (height - 475) && mouseY > (height - 550)) text("X", 150 + 30, height - (475 + 25));
+      }
+      if(mouseX < 300 && mouseX > 225){
+        //najdonja ploca
+        if(mouseY < (height - 50) && mouseY > (height - 125)) text("X", 225 + 30, height - (50 + 25));
+        if(mouseY < (height - 125) && mouseY > (height - 200)) text("X",225 + 30, height - (125 + 25));
+        if(mouseY < (height - 200) && mouseY > (height - 275)) text("X", 225 + 30, height - (200 + 25));
+        //srednja ploca
+        if(mouseY < (height - 325) && mouseY > (height - 400)) text("X", 225 + 30, height - (325 + 25));
+        if(mouseY < (height - 400) && mouseY > (height - 475)) text("X", 225 + 30, height - (400 + 25));
+        if(mouseY < (height - 475) && mouseY > (height - 550)) text("X", 225 + 30, height - (475 + 25));
+        //gornja ploca
+        if(mouseY < (height - 600) && mouseY > (height - 675)) text("X", 225 + 30, height - (600 + 25));
+        if(mouseY < (height - 675) && mouseY > (height - 750)) text("X", 225 + 30, height - (675 + 25));
+        if(mouseY < (height - 750) && mouseY > (height - 825)) text("X", 225 + 30, height - (750 + 25));
+      }
+      if(mouseX < 375 && mouseX > 300){
+        //gornja ploca
+        if(mouseY < (height - 600) && mouseY > (height - 675)) text("X", 300 + 30, height - (600 + 25));
+        if(mouseY < (height - 675) && mouseY > (height - 750)) text("X", 300 + 30, height - (675 + 25));
+        if(mouseY < (height - 750) && mouseY > (height - 825)) text("X", 300 + 30, height - (750 + 25));
+        //srednja ploca
+        if(mouseY < (height - 325) && mouseY > (height - 400)) text("X", 300 + 30, height - (325 + 25));
+        if(mouseY < (height - 400) && mouseY > (height - 475)) text("X", 300 + 30, height - (400 + 25));
+        if(mouseY < (height - 475) && mouseY > (height - 550)) text("X", 300 + 30, height - (475 + 25));
+      }
+      if(mouseX < 450 && mouseX > 375){
+        //gornja ploca
+        if(mouseY < (height - 600) && mouseY > (height - 675)) text("X", 375 + 30, height - (600 + 25));
+        if(mouseY < (height - 675) && mouseY > (height - 750)) text("X", 375 + 30, height - (675 + 25));
+        if(mouseY < (height - 750) && mouseY > (height - 825)) text("X", 375 + 30, height - (750 + 25));
+      }
+    }
+    if(type == 4){
+      textSize(30);
+      //najljeviji stupac
+      println(mouseX + " " + mouseY);
+      if(mouseX < 150 && mouseX > 100){
+        //usporedbe moraju biti suprotne
+        if(mouseY < (height - 50) && mouseY > (height - 100)) text("X", 100 + 20, height - (50 + 20));
+        if(mouseY < (height - 100) && mouseY > (height - 150)) text("X", 100 + 20, height - (100 + 20));
+        if(mouseY < (height - 150) && mouseY > (height - 200)) text("X", 100 + 20, height - (150 + 20));
+        if(mouseY < (height - 200) && mouseY > (height - 250)) text("X", 100 + 20, height - (200 + 20));
+      }
+      if(mouseX < 200 && mouseX > 150){
+        //usporedbe moraju biti suprotne
+        if(mouseY < (height - 50) && mouseY > (height - 100)) text("X", 150 + 20, height - (50 + 20));
+        if(mouseY < (height - 100) && mouseY > (height - 150)) text("X", 150 + 20, height - (100 + 20));
+        if(mouseY < (height - 150) && mouseY > (height - 200)) text("X", 150 + 20, height - (150 + 20));
+        if(mouseY < (height - 200) && mouseY > (height - 250)) text("X", 150 + 20, height - (200 + 20));
+        //srednja ploca
+        if(mouseY < (height - 325) && mouseY > (height - 400)) text("X", 150 + 30, height - (325 + 25));
+        if(mouseY < (height - 400) && mouseY > (height - 475)) text("X", 150 + 30, height - (400 + 25));
+        if(mouseY < (height - 475) && mouseY > (height - 550)) text("X", 150 + 30, height - (475 + 25));
+      }
+      if(mouseX < 250 && mouseX > 200){
+        //najdonja ploca
+        if(mouseY < (height - 50) && mouseY > (height - 125)) text("X", 225 + 30, height - (50 + 25));
+        if(mouseY < (height - 125) && mouseY > (height - 200)) text("X",225 + 30, height - (125 + 25));
+        if(mouseY < (height - 200) && mouseY > (height - 275)) text("X", 225 + 30, height - (200 + 25));
+        //srednja ploca
+        if(mouseY < (height - 325) && mouseY > (height - 400)) text("X", 225 + 30, height - (325 + 25));
+        if(mouseY < (height - 400) && mouseY > (height - 475)) text("X", 225 + 30, height - (400 + 25));
+        if(mouseY < (height - 475) && mouseY > (height - 550)) text("X", 225 + 30, height - (475 + 25));
+        //gornja ploca
+        if(mouseY < (height - 600) && mouseY > (height - 675)) text("X", 225 + 30, height - (600 + 25));
+        if(mouseY < (height - 675) && mouseY > (height - 750)) text("X", 225 + 30, height - (675 + 25));
+        if(mouseY < (height - 750) && mouseY > (height - 825)) text("X", 225 + 30, height - (750 + 25));
+      }
+      if(mouseX < 300 && mouseX > 250){
+        //gornja ploca
+        if(mouseY < (height - 600) && mouseY > (height - 675)) text("X", 300 + 30, height - (600 + 25));
+        if(mouseY < (height - 675) && mouseY > (height - 750)) text("X", 300 + 30, height - (675 + 25));
+        if(mouseY < (height - 750) && mouseY > (height - 825)) text("X", 300 + 30, height - (750 + 25));
+        //srednja ploca
+        if(mouseY < (height - 325) && mouseY > (height - 400)) text("X", 300 + 30, height - (325 + 25));
+        if(mouseY < (height - 400) && mouseY > (height - 475)) text("X", 300 + 30, height - (400 + 25));
+        if(mouseY < (height - 475) && mouseY > (height - 550)) text("X", 300 + 30, height - (475 + 25));
+      }
+      if(mouseX < 350 && mouseX > 300){
+        //gornja ploca
+        if(mouseY < (height - 600) && mouseY > (height - 675)) text("X", 375 + 30, height - (600 + 25));
+        if(mouseY < (height - 675) && mouseY > (height - 750)) text("X", 375 + 30, height - (675 + 25));
+        if(mouseY < (height - 750) && mouseY > (height - 825)) text("X", 375 + 30, height - (750 + 25));
+      }
+    }
   }
   else{
     //odabir dimenzije 3
