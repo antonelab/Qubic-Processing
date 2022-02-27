@@ -9,6 +9,11 @@ char player = 'x'; //oznaka igraca na potezu
 char winner = ' ';  //oznacava pobjednika
 int type = 3;
 
+Player player1;
+Player player2;
+Player currentPlayer;
+//Cube cube = new Cube3();
+
 PFont font;
 
 int mess = 0; //dodatna varijabla koja govori da li imamo poruku o greski
@@ -30,6 +35,12 @@ void setup(){
   bgXgreen = loadImage("x-green.jpg");
   bgOred = loadImage("o-red.jpg");
   
+  init();
+  /*for(int i = 0 ; i < 3; i++)
+        for(int j = 0; j < 3; j++)
+          for(int k = 0; k < 3; k++){
+            cube[i][j][k] = 'X';
+          }*/
   
 }
 
@@ -64,6 +75,16 @@ void draw(){
       
       line(225, height - 675, 450, height - 675);
       line(225, height - 750, 450, height - 750);
+      
+      //prikaz elemenata kocke
+      textSize(40);
+      textAlign(LEFT);
+      for(int i = 0 ; i < 3; i++)
+        for(int j = 0; j < 3; j++)
+          for(int k = 0; k < 3; k++){
+            text("X", 75 + 75 * k + 75 * (2 - i) + 30, height - (50 + 75 * j + 270 * (2 - i) + 25));
+          }
+      
     }
     if(type == 4){
       strokeWeight(6);
@@ -95,7 +116,7 @@ void draw(){
       line(250, height - 750, 400, height - 750);
     }
     
-    
+    textAlign(LEFT);
     textSize(40);
     fill(255);
     if(player == 'x') fill(name_color);
@@ -405,4 +426,12 @@ String removeLastChar(String s) {
     }
     if(s.length() == 1) return "";
     return s.substring(0, s.length()-1);
+}
+
+void init (){
+  /*player1 = new Player();
+  player2 = new Player();
+  player1.name = "";
+  player2.name = "";*/
+  name = 1;
 }
