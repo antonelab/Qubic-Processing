@@ -169,6 +169,15 @@ void draw(){
           for(int k = 0; k < 4; k++){
             text(game.cube.value(i,j,k), 100 + 50 * k + 50 * (3 - i) + 25, height - (20 + 50 * (3 - j) + 225 * (3 - i) + 15));
           }
+      //Prikaz hinta
+      if(showHint == 1){
+        fill(label_color);
+        int i = game.hintMove.level();
+        int j = game.hintMove.row();
+        int k = game.hintMove.column();
+        noStroke();
+        rect(100 + 50 * k + 50 * (3 - i) + 25 - 17, height - (20 + 50 * (3 - j) + 225 * (3 - i) + 15 + 32), 35, 35, 15);
+      }
     }
     
     textAlign(CENTER);
@@ -193,8 +202,13 @@ void draw(){
       textAlign(CENTER);
       text("Računanje poteza još traje ...", 800, 690);
       }
+      else{
+        fill(label_color);
+      }
     }
     else fill(255);
+    if(showHint == 1)
+      fill(label_color);
     rect(725, 600, 150, 50, 20);
     
     fill(0);

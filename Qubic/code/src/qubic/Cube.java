@@ -17,6 +17,8 @@ public interface Cube {
     public void unPlay(Move move);
     //heuristicka funkcija
     public int heuristic(char player,char opponent);
+    //provjerava jeli potez valjan
+    public boolean isValid(Move move);
     //vraca optimalnu dubinu minmax
     public int maxDepth();
     //iscrtava kocku u terminalu

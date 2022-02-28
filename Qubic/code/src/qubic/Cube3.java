@@ -109,7 +109,8 @@ public class Cube3 implements Cube{
             return moves;
         }
         
-        //provjerava jeli potez valjan4
+        //provjerava jeli potez valjan
+        @Override
         public boolean isValid(Move move)
         {
             if(move.level()<0 || move.level()>2) return false;
