@@ -12,17 +12,13 @@ import java.io.FileWriter;
 import java.io.*;
 
 
-String player1_name = "";
-String player2_name = "";
-int move_count = 0;
-char player = 'x'; //oznaka igraca na potezu
-char winner = ' ';  //oznacava pobjednika
 int type = 3; //defaultni tip igre
-String hint = "nema poteza trenutno"; //spremanje poteza koji racunalo nalazi kao najbolje
+int showHint = 0;//odreduje treba li se pokazati momoc
 
 Player player1;
 Player player2;
-Player currentPlayer;
+QubicGame game;
+Thread gameThread;//posebna dretva u kojoj se ceka potez igraca
 
 PFont font;
 
@@ -69,11 +65,7 @@ void setup(){
   bgOyellow = loadImage("o-yellow.jpg");
   
   init();
-  /*for(int i = 0 ; i < 3; i++)
-        for(int j = 0; j < 3; j++)
-          for(int k = 0; k < 3; k++){
-            cube[i][j][k] = 'X';
-          }*/
+  
   minim = new Minim(this);
   audio = minim.loadFile(move_sound);
   minim2 = new Minim(this);
@@ -117,8 +109,19 @@ void draw(){
       for(int i = 0 ; i < 3; i++)
         for(int j = 0; j < 3; j++)
           for(int k = 0; k < 3; k++){
-            text("X", 75 + 75 * k + 75 * (2 - i) + 30, height - (50 + 75 * (2 - j) + 270 * (2 - i) + 25));
+            text(game.cube.value(i,j,k), 75 + 75 * k + 75 * (2 - i) + 30, height - (50 + 75 * (2 - j) + 270 * (2 - i) + 25));
           }
+          
+      //Prikaz hinta
+      if(showHint == 1){
+        fill(label_color);
+        int i = game.hintMove.level();
+        int j = game.hintMove.row();
+        int k = game.hintMove.column();
+        noStroke();
+        rect(75 + 75 * k + 75 * (2 - i) + 30 - 18, height - (50 + 75 * (2 - j) + 270 * (2 - i) + 68),50 ,50, 20);
+      }
+        
       
     }
     if(type == 4){
@@ -163,31 +166,33 @@ void draw(){
       textAlign(CENTER);
       for(int i = 0 ; i < 4; i++)
         for(int j = 0; j < 4; j++)
-          for(int k = 0; k < 1; k++){
-            text("X", 100 + 50 * k + 50 * (3 - i) + 25, height - (20 + 50 * (3 - j) + 225 * (3 - i) + 15));
+          for(int k = 0; k < 4; k++){
+            text(game.cube.value(i,j,k), 100 + 50 * k + 50 * (3 - i) + 25, height - (20 + 50 * (3 - j) + 225 * (3 - i) + 15));
           }
     }
     
     textAlign(CENTER);
     textSize(40);
     fill(255);
-    if(player == 'x') fill(name_color);
-    text("X: " + player1_name, 800, height/3);
+    if(game.playerOnMove == 0) fill(name_color);
+    text("X: " + player1.name, 800, height/3);
     fill(255);
     text("   vs   ",800, height/3+50);
-    if(player == 'o') fill(name_color);
-    text("O: " + player2_name, 800, height/3+100);
+    if(game.playerOnMove == 1) fill(name_color);
+    text("O: " + player2.name, 800, height/3+100);
     fill(255);
-    text("Broj poteza: " + move_count, 800, height-100);
+    text("Broj poteza: " + game.moveCount, 800, height-100);
     
     stroke(0);
     strokeWeight(5);
     if(hover(725, 600, 150, 50)) 
     {
       fill(168, 168, 168);
+      if(game.hintMove == null){
       textSize(20);
       textAlign(CENTER);
-      text(hint, 800, 700);
+      text("Računanje poteza još traje ...", 800, 690);
+      }
     }
     else fill(255);
     rect(725, 600, 150, 50, 20);
@@ -200,7 +205,7 @@ void draw(){
     
     
     
-    if(winner != ' '){
+    if(game.winner != null){
       if(mute == 0) audio_win.play();
       textSize(50);
       fill(100);
@@ -208,40 +213,47 @@ void draw(){
       textAlign(CENTER);
       
       //-----(dodat pozadinu u ovisnosti o tome tko je pojedio(x/o.jpg))
-      if(winner == 'x'){
+      if(game.winner == player1.id()){
         if(bg_theme == "rg") background(bgXgreen);
         else if(bg_theme == "ym") background(bgXmagenta);
         else if(bg_theme == "pb") background(bgXblue);
         fill(0);
-        text("Game Over\nPobijedio je igrač:\n" + player1_name, width/2, height/3);
-        text("u "+move_count+" poteza", width/2, height/3+400);
+        text("Game Over\nPobijedio je igrač:\n" + player1.name, width/2, height/3);
+        text("u "+game.moveCount+" poteza", width/2, height/3+400);
       }
-      else{
+      else if(game.winner == player2.id()){
         if(bg_theme == "rg") background(bgOred);
         else if(bg_theme == "ym") background(bgOyellow);
         else if(bg_theme == "pb") background(bgOpink);
         fill(0);
-        text("Game Over\nPobijedio je igrač:\n" + player2_name, width/2, height/3);
-        text("u " + move_count + " poteza", width/2, height/3+200);
+        text("Game Over\nPobijedio je igrač:\n" + player2.name, width/2, height/3);
+        text("u " + game.moveCount + " poteza", width/2, height/3+400);
+      }
+      else{
+        text("Game Over\nIgra je završila nerješeno", width/2, height/3);
+        text("u " + game.moveCount + " poteza", width/2, height/3+200);
       }
       
       //ovaj dio koda treba preselit kod provjere pobjede u logici igre jer se inace upisuje cijelo vrijeme
       File f = new File(dataPath("results.txt"));   //pretpostavljamo da vec postoji file uz projekt
       try {
         PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(f, true)));
-        out.println(player1_name + "," + player2_name + "," + winner + "," + move_count+","+type);
+        out.println(player1.name + "," + player2.name + "," + game.winner + "," + game.moveCount+","+type);
         out.close();
       }catch (IOException e){
         e.printStackTrace();
       }
       
     }
-  }
-  else if(mess == 1){
+    if(mess > 0){
     textSize(20);
+    textAlign(CENTER);
     fill(label_color);
-    text("Potez nije valjan, pokušajte ponovno.", 800, height-150); 
+    text("Potez nije valjan, pokušajte ponovno.", 800, 725); 
     fill(255);
+    mess--;
+    }
+  
   }
   else if(info == 0){
     background(bg_color);
@@ -258,10 +270,10 @@ void draw(){
     textAlign(LEFT);
     textSize(40);
     if(name == 1) fill(name_color);
-    text("X: " + player1_name, 100, height/2-25);
+    text("X: " + player1.name, 100, height/2-25);
     fill(255);
     if(name == 2) fill(name_color);
-    text("O: " + player2_name, 100, height/2+25);
+    text("O: " + player2.name, 100, height/2+25);
     fill(255);
     if(hover(width*3/7+20, height/2-55, 150, 50)) fill(168, 168, 168);
     if( type == 3) fill(name_color);
@@ -289,8 +301,8 @@ void draw(){
     fill(255);
     textSize(20);
     textAlign(LEFT);
-    text("Napomena: Imena neka imaju maksimalno 10 znakova, ", 50, 4*height/5);
-    text("        višak znakova se ignorira. ", 100, 4* height/5+50);
+    text("Za igru protiv računala za ime upišite \"racunalo\".", 50, 4*height/5);
+    text("Napomena: Imena neka imaju maksimalno 10 znakova, višak znakova se ignorira. ", 50, 4* height/5+50);
     text("Napomena: Tipkom ? poziva se help. ", 50, 4* height/5+100);
     strokeWeight (8);
   }
@@ -453,10 +465,6 @@ void draw(){
 
 void mousePressed(){
   if( name == 0){
-    if(mute == 0){
-      audio.play();
-      audio.rewind();
-    }
     //u igri smo
     //po slucajevima igre:
     textAlign(CENTER);
@@ -467,49 +475,49 @@ void mousePressed(){
       //println(mouseX + " " + mouseY);
       if(mouseX < 150 && mouseX > 75){
         //usporedbe moraju biti suprotne
-        if(mouseY < (height - 50) && mouseY > (height - 125)) text("X", 75 + 30, height - (50 + 25));
-        if(mouseY < (height - 125) && mouseY > (height - 200)) text("X", 75 + 30, height - (125 + 25));
-        if(mouseY < (height - 200) && mouseY > (height - 275)) text("X", 75 + 30, height - (200 + 25));
+        if(mouseY < (height - 50) && mouseY > (height - 125)) move(2,2,0);
+        if(mouseY < (height - 125) && mouseY > (height - 200)) move(2,1,0);
+        if(mouseY < (height - 200) && mouseY > (height - 275)) move(2,0,0);
       }
       if(mouseX < 225 && mouseX > 150){
         //usporedbe moraju biti suprotne
-        if(mouseY < (height - 50) && mouseY > (height - 125)) text("X", 150 + 30, height - (50 + 25));
-        if(mouseY < (height - 125) && mouseY > (height - 200)) text("X", 150 + 30, height - (125 + 25));
-        if(mouseY < (height - 200) && mouseY > (height - 275)) text("X", 150 + 30, height - (200 + 25));
+        if(mouseY < (height - 50) && mouseY > (height - 125)) move(2,2,1);
+        if(mouseY < (height - 125) && mouseY > (height - 200)) move(2,1,1);
+        if(mouseY < (height - 200) && mouseY > (height - 275)) move(2,0,1);
         //srednja ploca
-        if(mouseY < (height - 325) && mouseY > (height - 400)) text("X", 150 + 30, height - (325 + 25));
-        if(mouseY < (height - 400) && mouseY > (height - 475)) text("X", 150 + 30, height - (400 + 25));
-        if(mouseY < (height - 475) && mouseY > (height - 550)) text("X", 150 + 30, height - (475 + 25));
+        if(mouseY < (height - 325) && mouseY > (height - 400)) move(1,2,0);
+        if(mouseY < (height - 400) && mouseY > (height - 475)) move(1,1,0);
+        if(mouseY < (height - 475) && mouseY > (height - 550)) move(1,0,0);
       }
       if(mouseX < 300 && mouseX > 225){
         //najdonja ploca
-        if(mouseY < (height - 50) && mouseY > (height - 125)) text("X", 225 + 30, height - (50 + 25));
-        if(mouseY < (height - 125) && mouseY > (height - 200)) text("X",225 + 30, height - (125 + 25));
-        if(mouseY < (height - 200) && mouseY > (height - 275)) text("X", 225 + 30, height - (200 + 25));
+        if(mouseY < (height - 50) && mouseY > (height - 125)) move(2,2,2);
+        if(mouseY < (height - 125) && mouseY > (height - 200)) move(2,1,2);
+        if(mouseY < (height - 200) && mouseY > (height - 275)) move(2,0,2);
         //srednja ploca
-        if(mouseY < (height - 325) && mouseY > (height - 400)) text("X", 225 + 30, height - (325 + 25));
-        if(mouseY < (height - 400) && mouseY > (height - 475)) text("X", 225 + 30, height - (400 + 25));
-        if(mouseY < (height - 475) && mouseY > (height - 550)) text("X", 225 + 30, height - (475 + 25));
+        if(mouseY < (height - 325) && mouseY > (height - 400)) move(1,2,1);
+        if(mouseY < (height - 400) && mouseY > (height - 475)) move(1,1,1);
+        if(mouseY < (height - 475) && mouseY > (height - 550)) move(1,0,1);
         //gornja ploca
-        if(mouseY < (height - 600) && mouseY > (height - 675)) text("X", 225 + 30, height - (600 + 25));
-        if(mouseY < (height - 675) && mouseY > (height - 750)) text("X", 225 + 30, height - (675 + 25));
-        if(mouseY < (height - 750) && mouseY > (height - 825)) text("X", 225 + 30, height - (750 + 25));
+        if(mouseY < (height - 600) && mouseY > (height - 675)) move(0,2,0);
+        if(mouseY < (height - 675) && mouseY > (height - 750)) move(0,1,0);
+        if(mouseY < (height - 750) && mouseY > (height - 825)) move(0,0,0);
       }
       if(mouseX < 375 && mouseX > 300){
         //gornja ploca
-        if(mouseY < (height - 600) && mouseY > (height - 675)) text("X", 300 + 30, height - (600 + 25));
-        if(mouseY < (height - 675) && mouseY > (height - 750)) text("X", 300 + 30, height - (675 + 25));
-        if(mouseY < (height - 750) && mouseY > (height - 825)) text("X", 300 + 30, height - (750 + 25));
+        if(mouseY < (height - 600) && mouseY > (height - 675)) move(0,2,1);
+        if(mouseY < (height - 675) && mouseY > (height - 750)) move(0,1,1);
+        if(mouseY < (height - 750) && mouseY > (height - 825)) move(0,0,1);
         //srednja ploca
-        if(mouseY < (height - 325) && mouseY > (height - 400)) text("X", 300 + 30, height - (325 + 25));
-        if(mouseY < (height - 400) && mouseY > (height - 475)) text("X", 300 + 30, height - (400 + 25));
-        if(mouseY < (height - 475) && mouseY > (height - 550)) text("X", 300 + 30, height - (475 + 25));
+        if(mouseY < (height - 325) && mouseY > (height - 400)) move(1,2,2);
+        if(mouseY < (height - 400) && mouseY > (height - 475)) move(1,1,2);
+        if(mouseY < (height - 475) && mouseY > (height - 550)) move(1,0,2);
       }
       if(mouseX < 450 && mouseX > 375){
         //gornja ploca
-        if(mouseY < (height - 600) && mouseY > (height - 675)) text("X", 375 + 30, height - (600 + 25));
-        if(mouseY < (height - 675) && mouseY > (height - 750)) text("X", 375 + 30, height - (675 + 25));
-        if(mouseY < (height - 750) && mouseY > (height - 825)) text("X", 375 + 30, height - (750 + 25));
+        if(mouseY < (height - 600) && mouseY > (height - 675)) move(0,2,2);
+        if(mouseY < (height - 675) && mouseY > (height - 750)) move(0,1,2);
+        if(mouseY < (height - 750) && mouseY > (height - 825)) move(0,0,2);
       }
     }
     if(type == 4){
@@ -518,97 +526,102 @@ void mousePressed(){
       //println(mouseX + " " + mouseY);
       if(mouseX < 150 && mouseX > 100){
         //usporedbe moraju biti suprotne
-        if(mouseY < (height - 25) && mouseY > (height - 75)) text("X", 100 + 20, height - (25 + 15));
-        if(mouseY < (height - 75) && mouseY > (height - 125)) text("X", 100 + 20, height - (75 + 15));
-        if(mouseY < (height - 125) && mouseY > (height - 175)) text("X", 100 + 20, height - (125 + 15));
-        if(mouseY < (height - 175) && mouseY > (height - 225)) text("X", 100 + 20, height - (175 + 15));
+        if(mouseY < (height - 25) && mouseY > (height - 75)) move(3,3,0);
+        if(mouseY < (height - 75) && mouseY > (height - 125)) move(3,2,0);
+        if(mouseY < (height - 125) && mouseY > (height - 175)) move(3,1,0);
+        if(mouseY < (height - 175) && mouseY > (height - 225)) move(3,0,0);
       }
       if(mouseX < 200 && mouseX > 150){
         //zadnja
-        if(mouseY < (height - 25) && mouseY > (height - 75)) text("X", 150 + 20, height - (25 + 15));
-        if(mouseY < (height - 75) && mouseY > (height - 125)) text("X", 150 + 20, height - (75 + 15));
-        if(mouseY < (height - 125) && mouseY > (height - 175)) text("X", 150 + 20, height - (125 + 15));
-        if(mouseY < (height - 175) && mouseY > (height - 225)) text("X", 150 + 20, height - (175 + 15));
+        if(mouseY < (height - 25) && mouseY > (height - 75)) move(3,3,1);
+        if(mouseY < (height - 75) && mouseY > (height - 125)) move(3,2,1);
+        if(mouseY < (height - 125) && mouseY > (height - 175)) move(3,1,1);
+        if(mouseY < (height - 175) && mouseY > (height - 225)) move(3,0,1);
         //treca ploca
-        if(mouseY < (height - 250) && mouseY > (height - 300)) text("X", 150 +20, height - (250 + 15));
-        if(mouseY < (height - 300) && mouseY > (height - 350)) text("X", 150 + 20, height - (300 + 15));
-        if(mouseY < (height - 350) && mouseY > (height - 400)) text("X", 150 + 20, height - (350 + 15));
-        if(mouseY < (height - 400) && mouseY > (height - 450)) text("X", 150 + 20, height - (400 + 15));
+        if(mouseY < (height - 250) && mouseY > (height - 300)) move(2,3,0);
+        if(mouseY < (height - 300) && mouseY > (height - 350)) move(2,2,0);
+        if(mouseY < (height - 350) && mouseY > (height - 400)) move(2,1,0);
+        if(mouseY < (height - 400) && mouseY > (height - 450)) move(2,0,0);
       }
       if(mouseX < 250 && mouseX > 200){
         //zadnja
-        if(mouseY < (height - 25) && mouseY > (height - 75)) text("X", 200 + 20, height - (25 + 15));
-        if(mouseY < (height - 75) && mouseY > (height - 125)) text("X", 200 + 20, height - (75 + 15));
-        if(mouseY < (height - 125) && mouseY > (height - 175)) text("X", 200 + 20, height - (125 + 15));
-        if(mouseY < (height - 175) && mouseY > (height - 225)) text("X", 200 + 20, height - (175 + 15));
+        if(mouseY < (height - 25) && mouseY > (height - 75)) move(3,3,2);
+        if(mouseY < (height - 75) && mouseY > (height - 125)) move(3,2,2);
+        if(mouseY < (height - 125) && mouseY > (height - 175)) move(3,1,2);
+        if(mouseY < (height - 175) && mouseY > (height - 225)) move(3,0,2);
         //treca ploca
-        if(mouseY < (height - 250) && mouseY > (height - 300)) text("X", 200 + 20, height - (250 + 15));
-        if(mouseY < (height - 300) && mouseY > (height - 350)) text("X", 200 + 20, height - (300 + 15));
-        if(mouseY < (height - 350) && mouseY > (height - 400)) text("X", 200 + 20, height - (350 + 15));
-        if(mouseY < (height - 400) && mouseY > (height - 450)) text("X", 200 + 20, height - (400 + 15));
+        if(mouseY < (height - 250) && mouseY > (height - 300)) move(2,3,1);
+        if(mouseY < (height - 300) && mouseY > (height - 350)) move(2,2,1);
+        if(mouseY < (height - 350) && mouseY > (height - 400)) move(2,1,1);
+        if(mouseY < (height - 400) && mouseY > (height - 450)) move(2,0,1);
         //druga ploca
-        if(mouseY < (height - 475) && mouseY > (height - 525)) text("X", 200 + 20, height - (475 + 15));
-        if(mouseY < (height - 525) && mouseY > (height - 575)) text("X", 200 + 20, height - (525 + 15));
-        if(mouseY < (height - 575) && mouseY > (height - 625)) text("X", 200 +20, height - (575 + 15));
-        if(mouseY < (height - 625) && mouseY > (height - 675)) text("X", 200 + 20, height - (625 + 15));
+        if(mouseY < (height - 475) && mouseY > (height - 525)) move(1,3,0);
+        if(mouseY < (height - 525) && mouseY > (height - 575)) move(1,2,0);
+        if(mouseY < (height - 575) && mouseY > (height - 625)) move(1,1,0);
+        if(mouseY < (height - 625) && mouseY > (height - 675)) move(1,0,0);
       }
       if(mouseX < 300 && mouseX > 250){
         //gornja ploca
-        if(mouseY < (height - 700) && mouseY > (height -750)) text("X", 250 + 20, height - (700 + 15));
-        if(mouseY < (height - 750) && mouseY > (height - 800)) text("X", 250 +20, height - (750 + 15));
-        if(mouseY < (height - 800) && mouseY > (height - 850)) text("X", 250 + 20, height - (800 + 15));
-        if(mouseY < (height - 850) && mouseY > (height - 900)) text("X", 250 + 20, height - (850 + 15));
+        if(mouseY < (height - 700) && mouseY > (height -750)) move(0,3,0);
+        if(mouseY < (height - 750) && mouseY > (height - 800)) move(0,2,0);
+        if(mouseY < (height - 800) && mouseY > (height - 850)) move(0,1,0);
+        if(mouseY < (height - 850) && mouseY > (height - 900)) move(0,0,0);
         //zadnja
-        if(mouseY < (height - 25) && mouseY > (height - 75)) text("X", 250 + 20, height - (25 + 15));
-        if(mouseY < (height - 75) && mouseY > (height - 125)) text("X", 250 + 20, height - (75 + 15));
-        if(mouseY < (height - 125) && mouseY > (height - 175)) text("X", 250 + 20, height - (125 + 15));
-        if(mouseY < (height - 175) && mouseY > (height - 225)) text("X", 250 + 20, height - (175 + 15));
+        if(mouseY < (height - 25) && mouseY > (height - 75)) move(3,3,3);
+        if(mouseY < (height - 75) && mouseY > (height - 125)) move(3,2,3);
+        if(mouseY < (height - 125) && mouseY > (height - 175)) move(3,1,3);
+        if(mouseY < (height - 175) && mouseY > (height - 225)) move(3,0,3);
         //treca ploca
-        if(mouseY < (height - 250) && mouseY > (height - 300)) text("X", 250 + 20, height - (250 + 15));
-        if(mouseY < (height - 300) && mouseY > (height - 350)) text("X", 250 + 20, height - (300 + 15));
-        if(mouseY < (height - 350) && mouseY > (height - 400)) text("X", 250 + 20, height - (350 + 15));
-        if(mouseY < (height - 400) && mouseY > (height - 450)) text("X", 250 + 20, height - (400 + 15));
+        if(mouseY < (height - 250) && mouseY > (height - 300)) move(2,3,2);
+        if(mouseY < (height - 300) && mouseY > (height - 350)) move(2,2,2);
+        if(mouseY < (height - 350) && mouseY > (height - 400)) move(2,1,2);
+        if(mouseY < (height - 400) && mouseY > (height - 450)) move(2,0,2);
         //druga ploca
-        if(mouseY < (height - 475) && mouseY > (height - 525)) text("X", 250 + 20, height - (475 + 15));
-        if(mouseY < (height - 525) && mouseY > (height - 575)) text("X", 250 + 20, height - (525 + 15));
-        if(mouseY < (height - 575) && mouseY > (height - 625)) text("X", 250 + 20, height - (575 + 15));
-        if(mouseY < (height - 625) && mouseY > (height - 675)) text("X", 250 + 20, height - (625 + 15));
+        if(mouseY < (height - 475) && mouseY > (height - 525)) move(1,3,1);
+        if(mouseY < (height - 525) && mouseY > (height - 575)) move(1,2,1);
+        if(mouseY < (height - 575) && mouseY > (height - 625)) move(1,1,1);
+        if(mouseY < (height - 625) && mouseY > (height - 675)) move(1,0,1);
       }
       if(mouseX < 350 && mouseX > 300){
         //gornja ploca
-        if(mouseY < (height - 700) && mouseY > (height -750)) text("X", 300 + 20, height - (700 + 15));
-        if(mouseY < (height - 750) && mouseY > (height - 800)) text("X", 300 +20, height - (750 + 15));
-        if(mouseY < (height - 800) && mouseY > (height - 850)) text("X", 300 + 20, height - (800 + 15));
-        if(mouseY < (height - 850) && mouseY > (height - 900)) text("X", 300 + 20, height - (850 + 15));
+        if(mouseY < (height - 700) && mouseY > (height -750)) move(0,3,1);
+        if(mouseY < (height - 750) && mouseY > (height - 800)) move(0,2,1);
+        if(mouseY < (height - 800) && mouseY > (height - 850)) move(0,1,1);
+        if(mouseY < (height - 850) && mouseY > (height - 900)) move(0,0,1);
         //treca ploca
-        if(mouseY < (height - 250) && mouseY > (height - 300)) text("X", 300 + 20, height - (250 + 15));
-        if(mouseY < (height - 300) && mouseY > (height - 350)) text("X", 300 + 20, height - (300 + 15));
-        if(mouseY < (height - 350) && mouseY > (height - 400)) text("X", 300 + 20, height - (350 + 15));
-        if(mouseY < (height - 400) && mouseY > (height - 450)) text("X", 300 + 20, height - (400 + 15));
+        if(mouseY < (height - 250) && mouseY > (height - 300)) move(2,3,3);
+        if(mouseY < (height - 300) && mouseY > (height - 350)) move(2,2,3);
+        if(mouseY < (height - 350) && mouseY > (height - 400)) move(2,1,3);
+        if(mouseY < (height - 400) && mouseY > (height - 450)) move(2,0,3);
         //druga ploca
-        if(mouseY < (height - 475) && mouseY > (height - 525)) text("X", 300 + 20, height - (475 + 15));
-        if(mouseY < (height - 525) && mouseY > (height - 575)) text("X", 300 + 20, height - (525 + 15));
-        if(mouseY < (height - 575) && mouseY > (height - 625)) text("X", 300 + 20, height - (575 + 15));
-        if(mouseY < (height - 625) && mouseY > (height - 675)) text("X", 300 + 20, height - (625 + 15));
+        if(mouseY < (height - 475) && mouseY > (height - 525)) move(1,3,2);
+        if(mouseY < (height - 525) && mouseY > (height - 575)) move(1,2,2);
+        if(mouseY < (height - 575) && mouseY > (height - 625)) move(1,1,2);
+        if(mouseY < (height - 625) && mouseY > (height - 675)) move(1,0,2);
       }
       if(mouseX < 400 && mouseX > 350){
         //gornja ploca
-        if(mouseY < (height - 700) && mouseY > (height -750)) text("X", 350 + 20, height - (700 + 15));
-        if(mouseY < (height - 750) && mouseY > (height - 800)) text("X", 350 +20, height - (750 + 15));
-        if(mouseY < (height - 800) && mouseY > (height - 850)) text("X", 350 + 20, height - (800 + 15));
-        if(mouseY < (height - 850) && mouseY > (height - 900)) text("X", 350 + 20, height - (850 + 15));
+        if(mouseY < (height - 700) && mouseY > (height -750)) move(0,3,2);
+        if(mouseY < (height - 750) && mouseY > (height - 800)) move(0,2,2);
+        if(mouseY < (height - 800) && mouseY > (height - 850)) move(0,1,2);
+        if(mouseY < (height - 850) && mouseY > (height - 900)) move(0,0,2);
         //druga ploca
-        if(mouseY < (height - 475) && mouseY > (height - 525)) text("X", 350 + 20, height - (475 + 15));
-        if(mouseY < (height - 525) && mouseY > (height - 575)) text("X", 350 + 20, height - (525 + 15));
-        if(mouseY < (height - 575) && mouseY > (height - 625)) text("X", 350 + 20, height - (575 + 15));
-        if(mouseY < (height - 625) && mouseY > (height - 675)) text("X", 350 + 20, height - (625 + 15));
+        if(mouseY < (height - 475) && mouseY > (height - 525)) move(1,3,3);
+        if(mouseY < (height - 525) && mouseY > (height - 575)) move(1,2,3);
+        if(mouseY < (height - 575) && mouseY > (height - 625)) move(1,1,3);
+        if(mouseY < (height - 625) && mouseY > (height - 675)) move(1,0,3);
       }
       if(mouseX < 450 && mouseX > 400){
         //gornja ploca
-        if(mouseY < (height - 700) && mouseY > (height -750)) text("X", 400 + 20, height - (700 + 15));
-        if(mouseY < (height - 750) && mouseY > (height - 800)) text("X", 400 +20, height - (750 + 15));
-        if(mouseY < (height - 800) && mouseY > (height - 850)) text("X", 400 + 20, height - (800 + 15));
-        if(mouseY < (height - 850) && mouseY > (height - 900)) text("X", 400 + 20, height - (850 + 15));
+        if(mouseY < (height - 700) && mouseY > (height -750)) move(0,3,3);
+        if(mouseY < (height - 750) && mouseY > (height - 800)) move(0,2,3);
+        if(mouseY < (height - 800) && mouseY > (height - 850)) move(0,1,3);
+        if(mouseY < (height - 850) && mouseY > (height - 900)) move(0,0,3);
+      }
+    }
+    if(hover(725, 600, 150, 50)){
+      if(game.hintMove != null){
+        showHint = 1;
       }
     }
   }
@@ -637,14 +650,16 @@ void mousePressed(){
 void keyPressed(){
   if (key != CODED) {
     if(key != ENTER && key != BACKSPACE && key != TAB && key != RETURN && key != ESC && key != DELETE && key != '$' && key != '%' && key != '&' && key != '?' && key != '#'){
-       if(name == 1 && player1_name.length() < 10) player1_name += key;
-       else if(name == 2 && player2_name.length() < 10) player2_name += key;
+       if(name == 1 && player1.name.length() < 10) player1.name += key;
+       else if(name == 2 && player2.name.length() < 10) player2.name += key;
     }
     else if(key == ENTER){
-      if(name == 1 && player1_name != "") name = 2;
-      else if(name == 2 && player2_name != "") {
+      if(name == 1 && player1.name != "") name = 2;
+      else if(name == 2 && player2.name != "") {
         name = 0;
-        //start_time =  millis();
+        game = new QubicGame(type, player1, player2);
+        gameThread = new Thread(game);  
+        gameThread.start();
       }
     }
     else if(key == '?'){
@@ -673,8 +688,8 @@ void keyPressed(){
       mute = 1 - mute;
     }
     else if(key == BACKSPACE){
-      if(name == 1) player1_name = removeLastChar(player1_name);
-      else if ( name == 2) player2_name = removeLastChar(player2_name);
+      if(name == 1) player1.name = removeLastChar(player1.name);
+      else if ( name == 2) player2.name = removeLastChar(player2.name);
     }
   }
    else if(keyCode == UP) { //gledamo samo x koji su pobjedili
@@ -746,35 +761,35 @@ void keyPressed(){
       if(keyCode == LEFT){
          if(line[4].equals("3"))
         {
-          if(line[2].equals("x") && line[0].equals(player1_name)) x_win3++;
-          if(line[2].equals("o") && line[1].equals(player1_name)) o_win3++;
+          if(line[2].equals("x") && line[0].equals(player1.name)) x_win3++;
+          if(line[2].equals("o") && line[1].equals(player1.name)) o_win3++;
         }
         else{
-          if(line[2].equals("x") && line[0].equals(player1_name)) x_win4++;
-          if(line[2].equals("o") && line[1].equals(player1_name)) o_win4++;
+          if(line[2].equals("x") && line[0].equals(player1.name)) x_win4++;
+          if(line[2].equals("o") && line[1].equals(player1.name)) o_win4++;
         }
       }
       if(keyCode == RIGHT){
         if(line[4].equals("3")){
-            if(line[2].equals("x") && line[0].equals(player2_name)) x_win3++;
-            if(line[2].equals("o") && line[1].equals(player2_name)) o_win3++;
+            if(line[2].equals("x") && line[0].equals(player2.name)) x_win3++;
+            if(line[2].equals("o") && line[1].equals(player2.name)) o_win3++;
         }
         else{
-          if(line[2].equals("x") && line[0].equals(player2_name)) x_win4++;
-          if(line[2].equals("o") && line[1].equals(player2_name)) o_win4++;
+          if(line[2].equals("x") && line[0].equals(player2.name)) x_win4++;
+          if(line[2].equals("o") && line[1].equals(player2.name)) o_win4++;
         } 
       }
     }
     winners3 = new String[]{};
     winners4 = new String[]{};
     if(keyCode == LEFT){
-      winners3 = append(winners3, "Statistika igrača "+ player1_name + " u igri 3x3x3:");
-      winners4 = append(winners4, "Statistika igrača "+ player1_name + " u igri 4x4x4:");
+      winners3 = append(winners3, "Statistika igrača "+ player1.name + " u igri 3x3x3:");
+      winners4 = append(winners4, "Statistika igrača "+ player1.name + " u igri 4x4x4:");
     }
     
     if(keyCode == RIGHT) {
-      winners3 = append(winners3, "Statistika igrača "+ player2_name + " u igri 3x3x3:");
-      winners4 = append(winners4, "Statistika igrača "+ player2_name + " u igri 4x4x4:");
+      winners3 = append(winners3, "Statistika igrača "+ player2.name + " u igri 3x3x3:");
+      winners4 = append(winners4, "Statistika igrača "+ player2.name + " u igri 4x4x4:");
     }
     winners3 = append(winners3, "Pobjede kao X igrača:  " + str(x_win3));
     winners3 = append(winners3, "Pobjede kao O igrača:  " + str(o_win3));
@@ -802,9 +817,30 @@ String removeLastChar(String s) {
 }
 
 void init (){
-  /*player1 = new Player();
-  player2 = new Player();
-  player1.name = "";
-  player2.name = "";*/
+  if(player1 == null){
+  player1 = new Player('X');
+    player1.name = "";
+  }
+  if(player2 == null){
+  player2 = new Player('O');
+  player2.name = "";
+  }
   name = 1;
+}
+
+void move(int i, int j, int k){
+  Move move = new Move(i,j,k);
+  if(game.cube.isValid(move) && 
+      !(game.playerOnMove == 0 && player1.name.equals("racunalo")) && 
+      !(game.playerOnMove == 1 && player2.name.equals("racunalo"))){
+   showHint = 0;
+   game.move = move;
+   if(mute == 0){
+      audio.play();
+      audio.rewind();
+    }
+  }
+  else{
+    mess = 50;
+  }
 }
