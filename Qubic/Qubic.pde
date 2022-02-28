@@ -1,4 +1,15 @@
+import ddf.minim.*;
+import ddf.minim.analysis.*;
+import ddf.minim.effects.*;
+import ddf.minim.signals.*;
+import ddf.minim.spi.*;
+import ddf.minim.ugens.*;
+
+import processing.sound.*;
+
 import qubic.*;
+import java.io.FileWriter;
+import java.io.*;
 
 
 String player1_name = "";
@@ -15,6 +26,12 @@ Player currentPlayer;
 
 PFont font;
 
+String move_sound = "zvuk_pisanja.mp3";
+String win_sound = "win_sound.mp3";
+Minim minim;
+Minim minim2;
+AudioPlayer audio_win;
+AudioPlayer audio;
 
 
 int mess = 0; //dodatna varijabla koja govori da li imamo poruku o greski
@@ -22,6 +39,7 @@ int name = 1; // ako je 1, postavlja se prvi, ako je 2 postavlja se drugi, ako j
 int info = 0; //ako je 1 onda se mora prikazat zaslon s pravilima
 int help = 0; //ako je 1 onda se mora prikazat zaslon s pomocnim informacijama
 int stat = 0; //ako je 1 onda je prikaz statistike
+int mute = 0; //ako je 1 onda se zvukovi igre i kraja igre čuju
 
 String[] winners3 = {};
 String[] winners4 = {};
@@ -56,7 +74,10 @@ void setup(){
           for(int k = 0; k < 3; k++){
             cube[i][j][k] = 'X';
           }*/
-  
+  minim = new Minim(this);
+  audio = minim.loadFile(move_sound);
+  minim2 = new Minim(this);
+  audio_win = minim2.loadFile(win_sound);
 }
 
 void draw(){
@@ -179,7 +200,8 @@ void draw(){
     
     
     
-      if(winner != ' '){
+    if(winner != ' '){
+      if(mute == 0) audio_win.play();
       textSize(50);
       fill(100);
       rect(0, 0, width, height);
@@ -192,7 +214,7 @@ void draw(){
         else if(bg_theme == "pb") background(bgXblue);
         fill(0);
         text("Game Over\nPobijedio je igrač:\n" + player1_name, width/2, height/3);
-        text("u "+move_count+" poteza", width/2, height/3+200);
+        text("u "+move_count+" poteza", width/2, height/3+400);
       }
       else{
         if(bg_theme == "rg") background(bgOred);
@@ -202,6 +224,17 @@ void draw(){
         text("Game Over\nPobijedio je igrač:\n" + player2_name, width/2, height/3);
         text("u " + move_count + " poteza", width/2, height/3+200);
       }
+      
+      //ovaj dio koda treba preselit kod provjere pobjede u logici igre jer se inace upisuje cijelo vrijeme
+      File f = new File(dataPath("results.txt"));   //pretpostavljamo da vec postoji file uz projekt
+      try {
+        PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(f, true)));
+        out.println(player1_name + "," + player2_name + "," + winner + "," + move_count+","+type);
+        out.close();
+      }catch (IOException e){
+        e.printStackTrace();
+      }
+      
     }
   }
   else if(mess == 1){
@@ -350,7 +383,38 @@ void draw(){
     textSize(30);
     textAlign(LEFT);
     text(" : izlaz/ulaz iz help-a  ",100, 150);
-    
+    fill(name_color);
+    textSize(40);
+    textAlign(LEFT);
+    text("#     ",50, 200);
+    fill(255);
+    textSize(30);
+    textAlign(LEFT);
+    text(" : uključivanje/isključivanje zvukova ",100, 200);
+    fill(name_color);
+    textSize(40);
+    textAlign(LEFT);
+    text("TAB     ",50, 260);
+    fill(255);
+    textSize(30);
+    textAlign(LEFT);
+    text(" : izlaz iz prikaza statistike ",150, 260);
+    fill(name_color);
+    textSize(40);
+    textAlign(LEFT);
+    text("tipka gore/dolje",50, 320);
+    fill(255);
+    textSize(30);
+    textAlign(LEFT);
+    text(" :  najbolji X/O igrači po vrsti ", 360, 320);
+    fill(name_color);
+    textSize(40);
+    textAlign(LEFT);
+    text("tipka lijevo/desno     ",50, 380);
+    fill(255);
+    textSize(30);
+    textAlign(LEFT);
+    text(" :  statistika X/O igrača ",380,380);
     
     //teme
     text("Odabir teme:", 50, height-200);
@@ -389,6 +453,10 @@ void draw(){
 
 void mousePressed(){
   if( name == 0){
+    if(mute == 0){
+      audio.play();
+      audio.rewind();
+    }
     //u igri smo
     //po slucajevima igre:
     textAlign(CENTER);
@@ -568,7 +636,7 @@ void mousePressed(){
 
 void keyPressed(){
   if (key != CODED) {
-    if(key != ENTER && key != BACKSPACE && key != TAB && key != RETURN && key != ESC && key != DELETE && key != '$' && key != '%' && key != '&' && key != '?'){
+    if(key != ENTER && key != BACKSPACE && key != TAB && key != RETURN && key != ESC && key != DELETE && key != '$' && key != '%' && key != '&' && key != '?' && key != '#'){
        if(name == 1 && player1_name.length() < 10) player1_name += key;
        else if(name == 2 && player2_name.length() < 10) player2_name += key;
     }
@@ -600,6 +668,9 @@ void keyPressed(){
       name_color = color(59, 182, 219);
       bg_color = color(2, 49, 64);
       bg_theme = "pb";
+    }
+    else if(key == '#'){
+      mute = 1 - mute;
     }
     else if(key == BACKSPACE){
       if(name == 1) player1_name = removeLastChar(player1_name);
