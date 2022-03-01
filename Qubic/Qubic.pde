@@ -39,9 +39,11 @@ int stat = 0; //ako je 1 onda je prikaz statistike
 int mute = 0; //ako je 1 onda se zvukovi igre i kraja igre cuju
 int newGame = 0; //ako je 1 pokrece se nova igra
 
+//sluzi za spremanje informacija o statistici
 String[] winners3 = {};
 String[] winners4 = {};
 
+//teme i slike
 color label_color = color(134, 194, 116);
 color name_color = color(199, 78, 92);
 color bg_color =  color(66, 32, 36);
@@ -62,6 +64,7 @@ void setup(){
   surface.setResizable(true);
   strokeWeight (8);
   font = createFont("GloriaHallelujah-Regular.ttf",50);
+  //slike završnog ekrana
   bgXgreen = loadImage("x-green.jpg");
   bgOred = loadImage("o-red.jpg");
   bgXblue = loadImage("x-blue.jpg");
@@ -188,6 +191,7 @@ void draw(){
       }
     }
     
+    //detalji igre na glavnom zaslonu
     textAlign(CENTER);
     textSize(40);
     fill(255);
@@ -202,6 +206,7 @@ void draw(){
     
     stroke(0);
     strokeWeight(5);
+    //hover hint
     if(hover(725, 600, 150, 50)) 
     {
       fill(168, 168, 168);
@@ -226,7 +231,7 @@ void draw(){
     fill(255);
     
     
-    
+    //provjera kraja igre
     if(game.winner != null){
       if(mute == 0) audio_win.play();
       textSize(50);
@@ -234,7 +239,6 @@ void draw(){
       rect(0, 0, width, height);
       textAlign(CENTER);
       
-      //-----(dodat pozadinu u ovisnosti o tome tko je pojedio(x/o.jpg))
       if(game.winner == player1.id()){
         if(bg_theme == "rg") background(bgXgreen);
         else if(bg_theme == "ym") background(bgXmagenta);
@@ -269,6 +273,7 @@ void draw(){
         text("Za ponovo pokretanje igre pritisnite SPACE.", 50,height-50); 
       }
       
+      //upis podataka za statistiku
       if(written == 0){
         File f = new File(dataPath("results.txt"));   //pretpostavljamo da vec postoji file uz projekt
         try {
@@ -280,11 +285,13 @@ void draw(){
           e.printStackTrace();
         }
       }
+      //ponovno pokretanje igre
       if(newGame == 1){
         init();
       }
       
     }
+    //poruka o neispravnom potezu
     if(mess > 0){
     textSize(20);
     textAlign(CENTER);
@@ -295,6 +302,7 @@ void draw(){
     }
   
   }
+  //pocetni zaslon
   else if(info == 0){
     background(bg_color);
     fill(255);
@@ -346,6 +354,7 @@ void draw(){
     text("Napomena: Tipkom ? poziva se help. ", 50, 4* height/5+100);
     strokeWeight (8);
   }
+  //pravila igre
   else if (info == 1){
     background(bg_color);
      textSize(30);
@@ -377,6 +386,7 @@ void draw(){
      text("Imena ne mogu sadržavati $, %, &, ?, #", 50, 850);
      fill(255);
   }
+  //statistika
   if(stat > 0){
     background(bg_color);
     fill(255);
@@ -421,6 +431,7 @@ void draw(){
       }
     }
   }
+  //prikaz helpa
   else if(help == 1){
     background(bg_color);
     fill(255);
@@ -516,11 +527,10 @@ void mousePressed(){
     //u igri smo
     //po slucajevima igre:
     textAlign(CENTER);
-    
+    //pritisak misem na polje
     if(type == 3){
       textSize(40);
       //najljeviji stupac
-      //println(mouseX + " " + mouseY);
       if(mouseX < 150 && mouseX > 75){
         //usporedbe moraju biti suprotne
         if(mouseY < (height - 50) && mouseY > (height - 125)) move(2,2,0);
@@ -667,12 +677,14 @@ void mousePressed(){
         if(mouseY < (height - 850) && mouseY > (height - 900)) move(0,0,3);
       }
     }
+    //pritisak gumba pomoc
     if(hover(725, 600, 150, 50)){
       if(game.hintMove != null){
         showHint = 1;
       }
     }
   }
+  //odabir verzije igre
   else{
     //odabir dimenzije 3
    if(info == 0 && hover(width*3/7+20, height/2-55, 150, 50)){
@@ -697,6 +709,7 @@ void mousePressed(){
 
 void keyPressed(){
   if (key != CODED) {
+    //pisanje imena
     if(key != ENTER && key != BACKSPACE && key != TAB && key != RETURN && key != ESC && key != DELETE && key != '$' && key != '%' && key != '&' && key != '?' && key != '#' && key!= ' '){
        if(name == 1 && player1.name.length() < 10) player1.name += key;
        else if(name == 2 && player2.name.length() < 10) player2.name += key;
@@ -751,12 +764,12 @@ void keyPressed(){
     for (int i = 0 ; i < lines.length; i++) {
       line = split(lines[i],',');
       if(line[4].equals("3")){
-        if(line[2].equals( "x" ) && results3.hasKey(line[0])) results3.increment(line[0]);
-        else if(line[2].equals( "x" ) && !results3.hasKey(line[0])) results3.set(line[0], 1);
+        if(line[2].equals( "X" ) && results3.hasKey(line[0])) results3.increment(line[0]);
+        else if(line[2].equals( "X" ) && !results3.hasKey(line[0])) results3.set(line[0], 1);
       }
       else{
-        if(line[2].equals( "x" ) && results4.hasKey(line[0])) results4.increment(line[0]);
-        else if(line[2].equals( "x" ) && !results4.hasKey(line[0])) results4.set(line[0], 1);
+        if(line[2].equals( "X" ) && results4.hasKey(line[0])) results4.increment(line[0]);
+        else if(line[2].equals( "X" ) && !results4.hasKey(line[0])) results4.set(line[0], 1);
       }
     }
     results3.sortValuesReverse();
@@ -779,12 +792,12 @@ void keyPressed(){
     for (int i = 0 ; i < lines.length; i++) {
       line = split(lines[i],',');
       if(line[4].equals("3")){
-        if(line[2].equals( "o" ) && results3.hasKey(line[1])) results3.increment(line[1]);
-        else if(line[2].equals( "o" ) && !results3.hasKey(line[1])) results3.set(line[1], 1);
+        if(line[2].equals( "O" ) && results3.hasKey(line[1])) results3.increment(line[1]);
+        else if(line[2].equals( "O" ) && !results3.hasKey(line[1])) results3.set(line[1], 1);
       }
       else{
-        if(line[2].equals( "o" ) && results4.hasKey(line[1])) results4.increment(line[1]);
-        else if(line[2].equals( "o" ) && !results4.hasKey(line[1])) results4.set(line[1], 1);
+        if(line[2].equals( "O" ) && results4.hasKey(line[1])) results4.increment(line[1]);
+        else if(line[2].equals( "O" ) && !results4.hasKey(line[1])) results4.set(line[1], 1);
       }
     }
     results3.sortValuesReverse();
@@ -800,7 +813,7 @@ void keyPressed(){
     
     stat = 2;
   }
-  else if(keyCode == LEFT || keyCode == RIGHT) { //gledamo samo o koji su pobjedili
+  else if(keyCode == LEFT || keyCode == RIGHT) {
     String[] lines = loadStrings("results.txt");
     String[] line;
     int x_win3 = 0;
@@ -812,22 +825,22 @@ void keyPressed(){
       if(keyCode == LEFT){
          if(line[4].equals("3"))
         {
-          if(line[2].equals("x") && line[0].equals(player1.name)) x_win3++;
-          if(line[2].equals("o") && line[1].equals(player1.name)) o_win3++;
+          if(line[2].equals("X") && line[0].equals(player1.name)) x_win3++;
+          if(line[2].equals("O") && line[1].equals(player1.name)) o_win3++;
         }
         else{
-          if(line[2].equals("x") && line[0].equals(player1.name)) x_win4++;
-          if(line[2].equals("o") && line[1].equals(player1.name)) o_win4++;
+          if(line[2].equals("X") && line[0].equals(player1.name)) x_win4++;
+          if(line[2].equals("O") && line[1].equals(player1.name)) o_win4++;
         }
       }
       if(keyCode == RIGHT){
         if(line[4].equals("3")){
-            if(line[2].equals("x") && line[0].equals(player2.name)) x_win3++;
-            if(line[2].equals("o") && line[1].equals(player2.name)) o_win3++;
+            if(line[2].equals("X") && line[0].equals(player2.name)) x_win3++;
+            if(line[2].equals("O") && line[1].equals(player2.name)) o_win3++;
         }
         else{
-          if(line[2].equals("x") && line[0].equals(player2.name)) x_win4++;
-          if(line[2].equals("o") && line[1].equals(player2.name)) o_win4++;
+          if(line[2].equals("X") && line[0].equals(player2.name)) x_win4++;
+          if(line[2].equals("O") && line[1].equals(player2.name)) o_win4++;
         } 
       }
     }
@@ -844,12 +857,13 @@ void keyPressed(){
     }
     winners3 = append(winners3, "Pobjede kao X igrač:  " + str(x_win3));
     winners3 = append(winners3, "Pobjede kao O igrač:  " + str(o_win3));
-    winners4= append(winners4, "Pobjede kao X igrač:  " + str(x_win4));
+    winners4 = append(winners4, "Pobjede kao X igrač:  " + str(x_win4));
     winners4 = append(winners4, "Pobjede kao O igrač:  " + str(o_win4));
     stat = 3;
   }
 }
 
+//funkcija koja nam kaze jesmo li misem iznad nekog objekta
 boolean hover(int x, int y, int width, int height)  {
   if (mouseX >= x && mouseX <= x+width && 
       mouseY >= y && mouseY <= y+height) {
@@ -859,6 +873,7 @@ boolean hover(int x, int y, int width, int height)  {
   }
 }
 
+//funkcija za brisanje zadnjeg znaka iz string
 String removeLastChar(String s) {
     if (s == null || s.length() == 0) {
         return s;
@@ -867,6 +882,7 @@ String removeLastChar(String s) {
     return s.substring(0, s.length()-1);
 }
 
+//postavljanje igre na pocetak
 void init (){
   if(player1 == null){
     player1 = new Player('X');
@@ -880,6 +896,7 @@ void init (){
   newGame = 0;
 }
 
+//funkcija koja sluzi za odigravanje poteza
 void move(int i, int j, int k){
   Move move = new Move(i,j,k);
   if(game.cube.isValid(move) && 
