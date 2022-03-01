@@ -13,7 +13,8 @@ import java.io.*;
 
 
 int type = 3; //defaultni tip igre
-int showHint = 0;//odreduje treba li se pokazati momoc
+int showHint = 0; //odreduje treba li se pokazati pomoc
+int written = 0; //odreduje je li upisano u datoteku - inace se beskonacno upisuje
 
 Player player1;
 Player player2;
@@ -35,7 +36,8 @@ int name = 1; // ako je 1, postavlja se prvi, ako je 2 postavlja se drugi, ako j
 int info = 0; //ako je 1 onda se mora prikazat zaslon s pravilima
 int help = 0; //ako je 1 onda se mora prikazat zaslon s pomocnim informacijama
 int stat = 0; //ako je 1 onda je prikaz statistike
-int mute = 0; //ako je 1 onda se zvukovi igre i kraja igre čuju
+int mute = 0; //ako je 1 onda se zvukovi igre i kraja igre cuju
+int newGame = 0; //ako je 1 pokrece se nova igra
 
 String[] winners3 = {};
 String[] winners4 = {};
@@ -51,6 +53,9 @@ PImage bgXblue;
 PImage bgOred;
 PImage bgXmagenta;
 PImage bgOyellow;
+PImage bgXO_rg;
+PImage bgXO_my;
+PImage bgXO_pb;
 
 void setup(){
   size(1000, 925);
@@ -63,6 +68,9 @@ void setup(){
   bgOpink= loadImage("o-pink.jpg");
   bgXmagenta = loadImage("x-magenta.jpg");
   bgOyellow = loadImage("o-yellow.jpg");
+  bgXO_rg = loadImage("xo-rg.png");
+  bgXO_my = loadImage("xo-my.jpg");
+  bgXO_pb = loadImage("xo-pb.jpg");
   
   init();
   
@@ -234,6 +242,9 @@ void draw(){
         fill(0);
         text("Game Over\nPobijedio je igrač:\n" + player1.name, width/2, height/3);
         text("u "+game.moveCount+" poteza", width/2, height/3+400);
+        textSize(25);
+        textAlign(LEFT);
+        text("Za ponovo pokretanje igre pritisnite SPACE.", 50,height-50); 
       }
       else if(game.winner == player2.id()){
         if(bg_theme == "rg") background(bgOred);
@@ -242,20 +253,35 @@ void draw(){
         fill(0);
         text("Game Over\nPobijedio je igrač:\n" + player2.name, width/2, height/3);
         text("u " + game.moveCount + " poteza", width/2, height/3+400);
+        textSize(25);
+        textAlign(LEFT);
+        text("Za ponovo pokretanje igre pritisnite SPACE.", 50,height-50); 
       }
       else{
+        if(bg_theme == "rg") background(bgXO_rg);
+        else if(bg_theme == "ym") background(bgXO_my);
+        else if(bg_theme == "pb") background(bgXO_pb);
+        fill(0);
         text("Game Over\nIgra je završila nerješeno", width/2, height/3);
         text("u " + game.moveCount + " poteza", width/2, height/3+200);
+        textSize(25);
+        textAlign(LEFT);
+        text("Za ponovo pokretanje igre pritisnite SPACE.", 50,height-50); 
       }
       
-      //ovaj dio koda treba preselit kod provjere pobjede u logici igre jer se inace upisuje cijelo vrijeme
-      File f = new File(dataPath("results.txt"));   //pretpostavljamo da vec postoji file uz projekt
-      try {
-        PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(f, true)));
-        out.println(player1.name + "," + player2.name + "," + game.winner + "," + game.moveCount+","+type);
-        out.close();
-      }catch (IOException e){
-        e.printStackTrace();
+      if(written == 0){
+        File f = new File(dataPath("results.txt"));   //pretpostavljamo da vec postoji file uz projekt
+        try {
+          PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(f, true)));
+          out.println(player1.name + "," + player2.name + "," + game.winner + "," + game.moveCount+","+type);
+          out.close();
+          written  = 1;
+        }catch (IOException e){
+          e.printStackTrace();
+        }
+      }
+      if(newGame == 1){
+        init();
       }
       
     }
@@ -348,7 +374,7 @@ void draw(){
      text("Kada su oba imena upisana, igra počinje. ", 50, 700);
      text("Pripazite da imena imaju do 10 znakova, ", 50, 750);
      text("  ostali znakovi se zanemaruju. Sretno!", 50, 800);
-     text("Imena ne mogu sadržavati $, %, &, ?", 50, 850);
+     text("Imena ne mogu sadržavati $, %, &, ?, #", 50, 850);
      fill(255);
   }
   if(stat > 0){
@@ -441,6 +467,14 @@ void draw(){
     textSize(30);
     textAlign(LEFT);
     text(" :  statistika X/O igrača ",380,380);
+    fill(name_color);
+    textSize(40);
+    textAlign(LEFT);
+    text("tipka SPACE     ",50, 440);
+    fill(255);
+    textSize(30);
+    textAlign(LEFT);
+    text(" :  ponovo pokretanje igre na kraju ",300,440);
     
     //teme
     text("Odabir teme:", 50, height-200);
@@ -663,7 +697,7 @@ void mousePressed(){
 
 void keyPressed(){
   if (key != CODED) {
-    if(key != ENTER && key != BACKSPACE && key != TAB && key != RETURN && key != ESC && key != DELETE && key != '$' && key != '%' && key != '&' && key != '?' && key != '#'){
+    if(key != ENTER && key != BACKSPACE && key != TAB && key != RETURN && key != ESC && key != DELETE && key != '$' && key != '%' && key != '&' && key != '?' && key != '#' && key!= ' '){
        if(name == 1 && player1.name.length() < 10) player1.name += key;
        else if(name == 2 && player2.name.length() < 10) player2.name += key;
     }
@@ -675,6 +709,9 @@ void keyPressed(){
         gameThread = new Thread(game);  
         gameThread.start();
       }
+    }
+    else if(key == ' '){
+      newGame = 1;
     }
     else if(key == '?'){
       help = 1 - help;
@@ -832,12 +869,12 @@ String removeLastChar(String s) {
 
 void init (){
   if(player1 == null){
-  player1 = new Player('X');
+    player1 = new Player('X');
     player1.name = "";
   }
   if(player2 == null){
-  player2 = new Player('O');
-  player2.name = "";
+    player2 = new Player('O');
+    player2.name = "";
   }
   name = 1;
 }

@@ -21,3 +21,7 @@ aa,aaaa,o,20,3
 Ivan,Sanja,x,35,4
 Ivan,Sanja,o,44,3
 Ivan,Sanja,x,31,3a,a,x,0,3
+a,a,a,5,3
+a,a,X,5,3
+a,a,X,5,3
+a,a,X,5,3
