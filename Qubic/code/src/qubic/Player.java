@@ -97,9 +97,53 @@ public class Player {
             int alpha = -1000;
             int beta = 1000;
             for(int i = 1; i <= cube.maxDepth(); i++){
-                result = minMax(cube, moves, id, alpha, beta, i);
-                //System.out.println(i + "    " + result.first);
-                if(result.first==-500 || result.first==500)break;
+                try
+                {
+                    Thread.sleep(10);
+                    result = minMax(cube, moves, id, alpha, beta, i);
+                    //System.out.println(i + "    " + result.first);
+                    if(result.first==-500 || result.first==500)break;
+                }
+                catch(InterruptedException ex)
+                {
+                    Thread.currentThread().interrupt();
+                    return null;
+                }
+            }
+
+            //u situaciji kada ne mozemo pobijediti
+            //idemo maksimalno otezati protivniku
+            if(id == 'O' && result.first > 0){
+                
+                for(int i = 1; i <= cube.maxDepth(); i++){
+                    try
+                    {
+                        Thread.sleep(10);
+                        result = minMax(cube, moves, 'X', alpha, beta, i);
+                        if(result.first==-500 || result.first==500)break;
+                    }
+                    catch(InterruptedException ex)
+                    {
+                        Thread.currentThread().interrupt();
+                        return null;
+                    }  
+                }
+            }
+
+            else if(id == 'X' && result.first < 0){
+                for(int i = 1; i <= cube.maxDepth(); i++){
+                    try
+                    {
+                        Thread.sleep(10);
+                        result = minMax(cube, moves, 'O', alpha, beta, i);
+                        if(result.first==-500 || result.first==500)break;
+                    }
+                    catch(InterruptedException ex)
+                    {
+                        Thread.currentThread().interrupt();
+                        return null;
+                    }
+                }
             }
             
             //System.out.println(result.second);

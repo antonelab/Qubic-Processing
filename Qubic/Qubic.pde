@@ -378,7 +378,7 @@ void draw(){
      fill(255);
   }
   if(stat > 0){
-    background(100);
+    background(bg_color);
     fill(255);
     textSize(50);
     textAlign(CENTER);
@@ -842,10 +842,10 @@ void keyPressed(){
       winners3 = append(winners3, "Statistika igrača "+ player2.name + " u igri 3x3x3:");
       winners4 = append(winners4, "Statistika igrača "+ player2.name + " u igri 4x4x4:");
     }
-    winners3 = append(winners3, "Pobjede kao X igrača:  " + str(x_win3));
-    winners3 = append(winners3, "Pobjede kao O igrača:  " + str(o_win3));
-    winners4= append(winners4, "Pobjede kao X igrača:  " + str(x_win4));
-    winners4 = append(winners4, "Pobjede kao O igrača:  " + str(o_win4));
+    winners3 = append(winners3, "Pobjede kao X igrač:  " + str(x_win3));
+    winners3 = append(winners3, "Pobjede kao O igrač:  " + str(o_win3));
+    winners4= append(winners4, "Pobjede kao X igrač:  " + str(x_win4));
+    winners4 = append(winners4, "Pobjede kao O igrač:  " + str(o_win4));
     stat = 3;
   }
 }
@@ -877,6 +877,7 @@ void init (){
     player2.name = "";
   }
   name = 1;
+  newGame = 0;
 }
 
 void move(int i, int j, int k){

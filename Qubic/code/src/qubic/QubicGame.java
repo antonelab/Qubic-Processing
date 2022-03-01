@@ -66,6 +66,7 @@ public class QubicGame implements Runnable{
                 }
                 catch(InterruptedException ex)
                 {
+                    hintThread.interrupt();
                     Thread.currentThread().interrupt();
                 }
                 if(current.name.equals("racunalo")  )
@@ -79,7 +80,7 @@ public class QubicGame implements Runnable{
             cube.play(move,  id);
             moveCount++;
             move = null;
-            cube.print();
+            //cube.print();
             playerOnMove = 1 - playerOnMove;
             result = cube.result();
         }
