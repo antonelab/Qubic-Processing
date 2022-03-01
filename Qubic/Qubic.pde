@@ -878,6 +878,7 @@ void init (){
   }
   name = 1;
   newGame = 0;
+  written = 0;
 }
 
 void move(int i, int j, int k){

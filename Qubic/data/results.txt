@@ -27,3 +27,8 @@ a,a,X,5,3
 a,a,X,5,3
 a,a,X,5,3
 Ivan,Antonela,X,7,3
+s,d,X,5,3
+racunalo,mmm,X,7,3
+prvi,drugi,X,5,3
+prvi,drugi,O,6,3
+a,a,X,7,3
