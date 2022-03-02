@@ -32,3 +32,7 @@ racunalo,mmm,X,7,3
 prvi,drugi,X,5,3
 prvi,drugi,O,6,3
 a,a,X,7,3
+pr,dr,X,5,3
+pr,dr,X,5,3
+pr,dr,O,6,3
+p,k,X,5,3
